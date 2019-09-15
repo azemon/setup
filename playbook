@@ -1,0 +1,63 @@
+- hosts: localhost
+  connection: local
+
+  pre_tasks:
+    - name: gather local facts
+      setup:
+      delegate_to: localhost
+      delegate_facts: True
+
+  tasks:
+    - debug:
+        var: ansible_facts
+        verbosity: 3
+
+    - set_fact:
+        crostini=True
+      when: ansible_facts.env.SOMMELIER_VERSION is defined
+
+    - apt:
+        name: "{{ packages }}"
+      vars:
+        packages:
+          - aptitude
+          - emacs
+          - htop
+      become: yes
+
+    - copy:
+        src: files/{{ item }}
+        dest: $HOME
+        force: no
+      with_items:
+        - .emacs
+        - .gitconfig
+
+    - lineinfile:
+        path: $HOME/.bashrc
+        line: "export EDITOR=emacs"
+        regexp: "export +EDITOR=emacs"
+        state: present
+        backup: yes
+
+    - name: only on Chromebooks
+      block:
+        - name: copy systemd files to start ssh-agent
+          copy:
+            src: files/{{ item }}
+            dest: $HOME
+            force: no
+          with_items:
+            - .config
+
+        - name: set env variable for ssh-agent socket
+          blockinfile:
+            path: $HOME/.profile
+            backup: yes
+            block: |
+              if [ -e $XDG_RUNTIME_DIR/ssh-agent.socket ]; then
+                  export SSH_AUTH_SOCK=$XDG_RUNTIME_DIR/ssh-agent.socket
+              fi
+            marker_begin: "xdg_runtime_begin"
+            marker_end: "xdg_runtime_end"
+      when: crostini is defined
