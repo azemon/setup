@@ -21,8 +21,13 @@
       vars:
         packages:
           - aptitude
+          - dnsutils
           - emacs
+          - gawk
+          - git-flow
           - htop
+          - netcat
+          - whois
       become: yes
 
     - copy:
@@ -44,11 +49,9 @@
       block:
         - name: copy systemd files to start ssh-agent
           copy:
-            src: files/{{ item }}
+            src: files/.config
             dest: $HOME
             force: no
-          with_items:
-            - .config
 
         - name: set env variable for ssh-agent socket
           blockinfile:
@@ -58,6 +61,6 @@
               if [ -e $XDG_RUNTIME_DIR/ssh-agent.socket ]; then
                   export SSH_AUTH_SOCK=$XDG_RUNTIME_DIR/ssh-agent.socket
               fi
-            marker_begin: "xdg_runtime_begin"
-            marker_end: "xdg_runtime_end"
+            marker_begin: "ssh-agent socket"
+            marker_end: "ssh-agent socket"
       when: crostini is defined
