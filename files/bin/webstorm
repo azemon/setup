@@ -1,0 +1,5 @@
+#!/bin/bash
+
+webstormdir=$(ls -Rd $HOME/bin/WebStorm-* | head -1)
+
+sommelier -X --scale=0.5 $webstormdir/bin/webstorm.sh $*

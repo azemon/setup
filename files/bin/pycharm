@@ -1,0 +1,5 @@
+#!/bin/bash
+
+pycharmdir=$(ls -Rd $HOME/bin/pycharm-* | head -1)
+
+sommelier -X --scale=0.5 $pycharmdir/bin/pycharm.sh $*
