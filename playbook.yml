@@ -12,11 +12,13 @@
         var: ansible_facts
         verbosity: 3
 
-    - set_fact:
+    - name: check if ChromeOS
+      set_fact:
         crostini=True
       when: ansible_facts.env.SOMMELIER_VERSION is defined
 
-    - apt:
+    - name: install packages
+      apt:
         name: "{{ packages }}"
       vars:
         packages:
@@ -29,8 +31,10 @@
           - netcat
           - whois
       become: yes
+      ignore_errors: yes
 
-    - copy:
+    - name: copy config files
+      copy:
         src: files/{{ item }}
         dest: $HOME
         force: no
@@ -38,12 +42,25 @@
         - .emacs
         - .gitconfig
 
-    - lineinfile:
+    - name: set emacs as default editor
+      lineinfile:
         path: $HOME/.bashrc
         line: "export EDITOR=emacs"
         regexp: "export +EDITOR=emacs"
         state: present
         backup: yes
+
+    - name: add entries to /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        line: "{{ item }}"
+        regexp: "^{{ item }}"
+        state: present
+        backup: yes
+      with_items:
+        - "192.168.0.58	bd4c"
+        - "192.168.0.26	dumbo"
+      become: yes
 
     - name: only on Chromebooks
       block:
@@ -61,6 +78,6 @@
               if [ -e $XDG_RUNTIME_DIR/ssh-agent.socket ]; then
                   export SSH_AUTH_SOCK=$XDG_RUNTIME_DIR/ssh-agent.socket
               fi
-            marker_begin: "ssh-agent socket"
-            marker_end: "ssh-agent socket"
+            marker_begin: "ssh-agent socket BEGIN"
+            marker_end: "ssh-agent socket END"
       when: crostini is defined
