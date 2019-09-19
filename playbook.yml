@@ -80,4 +80,13 @@
               fi
             marker_begin: "ssh-agent socket BEGIN"
             marker_end: "ssh-agent socket END"
+
+        - name: copy Jetbrains startup scripts to $HOME/bin
+          copy:
+            src: files/bin/{{ item }}
+            dest: $HOME/bin
+          with_items:
+            - pycharm
+            - webstorm
+            
       when: crostini is defined
