@@ -1,0 +1,15 @@
+#!/bin/bash -x
+
+hostname="${1:-art.zemon.name}"
+ipaddr=$(dig +short $hostname | tail -1)
+
+if [ "" != "$ipaddr" ]
+then
+    exclude="-x $ipaddr/32"
+else
+    exclude="-x 192.168.0.0/16"
+fi
+
+sshuttle -r art@$hostname $exclude 0/0
+
+# sshuttle -r art@$hostname $exclude -x 10.0.0.0/8 -x 172.16.0.0/12 -x 192.168.0.0/16 0/0
