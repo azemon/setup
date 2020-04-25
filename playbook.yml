@@ -28,7 +28,11 @@
           - gawk
           - git-flow
           - htop
+          - jq
           - netcat
+          - python3-dev
+          - python3-venv
+          - python3-wheel
           - whois
       become: yes
       ignore_errors: yes
