@@ -1,0 +1,10 @@
+[Unit]
+Description=Local system suspend actions
+Before=sleep.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/systemctl stop mariadb.service
+
+[Install]
+WantedBy=sleep.target

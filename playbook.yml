@@ -40,6 +40,24 @@
       become: yes
       ignore_errors: yes
 
+    - name: copy suspend/resume helper systemd files
+      copy:
+        src: files/etc/systemd/system/{{ item }}
+        dest: /etc/systemd/system
+      become: yes
+      with_items:
+        - mariadb-resume.service
+        - mariadb-suspend.service
+
+    - name: enable MariaDB suspend/resume helper services
+      systemd:
+        enabled: yes
+        name: "{{ item }}"
+      become: yes
+      with_items:
+        - mariadb-resume.service
+        - mariadb-suspend.service
+
     - name: copy config files
       copy:
         src: files/{{ item }}
@@ -65,7 +83,7 @@
         state: present
         backup: yes
       with_items:
-        - "192.168.0.58	bd4c tippy"
+        - "192.168.0.58	tippy"
         - "192.168.0.26	dumbo"
       become: yes
 
