@@ -23,18 +23,24 @@
       vars:
         packages:
           - aptitude
+          - autofs
+          - curl
           - dnsutils
           - emacs
+          - flatpak
           - gawk
           - git-flow
           - htop
           - jq
+          - libfuse2
           - psensor
           - python3-dev
           - python3-venv
           - python3-wheel
           - rdiff-backup
+          - ssmtp
           - tree
+          - wget
           - whois
       become: yes
       ignore_errors: yes
@@ -56,6 +62,33 @@
       with_items:
         - mariadb-resume.service
         - mariadb-suspend.service
+
+    - name: install autofs NFS config file
+      copy:
+        src: files/etc/{{ item }}
+        dest: /etc
+      become: yes
+      with_items:
+        - auto.nfs
+      notify:
+        - restart autofs
+
+    - name: add auto.nfs to autofs.master
+      lineinfile:
+        path: /etc/auto.master
+        line: "/nfs    /etc/auto.nfs"
+        regexp: "^/nfs"
+        state: present
+        backup: yes
+      become: yes
+      notify:
+        - restart autofs
+
+    - name: create /nfs directory
+      file:
+        path: /nfs
+        state: directory
+      become: yes
 
     - name: copy config files
       copy:
@@ -114,3 +147,10 @@
             - webstorm
             
       when: crostini is defined
+
+  handlers:
+    - name: restart autofs
+      ansible.builtin.service:
+        name: autofs
+        state: restarted
+      become: yes
